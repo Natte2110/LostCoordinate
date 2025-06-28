@@ -1,0 +1,435 @@
+body {
+  margin: 0;
+}
+
+#mapView {
+  height: calc(100vh - 4rem);
+  top: 4rem;
+  width: 100vw;
+  position: relative;
+}
+
+#infoPanel {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: white;
+  padding: 1rem;
+  border-radius: 6px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  z-index: 10;
+}
+
+.form-container {
+  max-width: 400px;
+  margin: 100px auto;
+  padding: 2rem;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.form-container label {
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.form-container input {
+  width: 100%;
+  padding: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.form-container button {
+  padding: 0.75rem 1.5rem;
+  cursor: pointer;
+}
+
+#navBar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: rgb(55, 55, 55);
+  padding: 8px 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 999;
+  height: 4rem;
+  box-sizing: border-box;
+  /* << Add this */
+  color: white;
+}
+
+#navBar .nav-left button,
+#navBar .nav-right span {
+  margin-right: 8px;
+}
+
+#colorOptions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+#colorOptions label {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: inline-block;
+  border: 2px solid transparent;
+}
+
+#colorOptions input[type="radio"]:checked+label {
+  border-color: white;
+  border-width: 2px;
+}
+
+#colorOptions label.taken {
+  opacity: 0.4;
+  /* Make it look disabled */
+  filter: grayscale(80%);
+  /* Remove most color */
+  cursor: not-allowed;
+  position: relative;
+}
+
+/* Optional: Add a simple "X" or overlay stripe */
+#colorOptions label.taken::after {
+  content: "✕";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 1rem;
+}
+
+#colorOptions input[type="radio"] {
+  display: none;
+}
+
+.cssbuttons-io {
+  position: relative;
+  font-family: inherit;
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: 0.05em;
+  border-radius: 0.8em;
+  cursor: pointer;
+  border: none;
+  background: linear-gradient(to right, #26804c, #58bc82);
+  color: ghostwhite;
+  overflow: hidden;
+}
+
+.cssbuttons-io span {
+  position: relative;
+  z-index: 10;
+  transition: color 0.4s;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5em 0.8em;
+}
+
+.cssbuttons-io::before,
+.cssbuttons-io::after {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+.cssbuttons-io::before {
+  content: "";
+  background: #000;
+  width: 120%;
+  left: -10%;
+  transform: skew(30deg);
+  transition: transform 0.4s cubic-bezier(0.3, 1, 0.8, 1);
+}
+
+.cssbuttons-io:hover::before {
+  transform: translate3d(100%, 0, 0);
+}
+
+.cssbuttons-io:active {
+  transform: scale(0.95);
+}
+
+.backdrop {
+  background-color: rgb(55, 55, 55);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.form-container {
+  max-width: 500px;
+  width: 30%;
+  padding: 2rem;
+  background: #2c2c2c;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  color: #efefef;
+}
+
+
+/* From Uiverse.io by bociKond */
+.form {
+  --bg-light: #efefef;
+  --bg-dark: #707070;
+  --clr: #58bc82;
+  --clr-alpha: #9c9c9c60;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+}
+
+.form .input-span {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.input-span,
+.form input[type="text"],
+.form input[type="password"],
+.form input[type="email"] {
+  box-sizing: border-box;
+}
+
+.form input[type="text"],
+.form input[type="password"] {
+  border-radius: 0.5rem;
+  padding: 1rem 0.75rem;
+  width: 100%;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: var(--clr-alpha);
+  outline: 2px solid var(--bg-dark);
+  color: white;
+}
+
+.form input[type="email"]:focus,
+.form input[type="password"]:focus {
+  outline: 2px solid var(--clr);
+}
+
+.label {
+  align-self: flex-start;
+  color: var(--clr);
+  font-weight: 600;
+}
+
+.form .submit {
+  padding: 1rem 0.75rem;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 3rem;
+  background-color: var(--bg-dark);
+  color: var(--bg-light);
+  border: none;
+  cursor: pointer;
+  transition: all 300ms;
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.form .submit:hover {
+  background-color: var(--clr);
+  color: white;
+}
+
+.span {
+  text-decoration: none;
+  color: var(--bg-dark);
+}
+
+.span a {
+  color: var(--clr);
+}
+
+#teamsList {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 5px;
+}
+
+#teamsList button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 4px;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+#teamsList button:hover {
+  transform: scale(1.05);
+}
+
+
+.modal-alert {
+  position: fixed;
+  top: 5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  font-family: sans-serif;
+  width: 260px;
+  max-width: 90%;
+  font-size: 12px;
+  background-color: rgb(55, 55, 55);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.modal-alert.show {
+  animation: modalFadeSlideIn 0.3s ease forwards;
+  pointer-events: auto;
+}
+
+/* Add this inside the modal-alert HTML */
+.modal-timer {
+  height: 4px;
+  background: linear-gradient(to right, #26804c, #58bc82);
+  animation: shrink 5s linear forwards;
+}
+
+@keyframes shrink {
+  from {
+    width: 100%;
+  }
+
+  to {
+    width: 0%;
+  }
+}
+
+
+.modal-alert.hidden {
+  display: none;
+}
+
+.modal-alert-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: rgb(55, 55, 55);
+  border-radius: 8px;
+  padding: 10px;
+  color: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.modal-alert-icon {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 6px;
+  border-radius: 8px;
+  color: #d65563;
+  margin-right: 8px;
+}
+
+.modal-alert-icon-svg {
+  width: 24px;
+  height: 24px;
+}
+
+.modal-alert-text {
+  flex-grow: 1;
+}
+
+.modal-alert-title {
+  margin: 0;
+  font-weight: bold;
+}
+
+.modal-alert-description {
+  margin: 0;
+  color: #999;
+}
+
+.modal-alert-close {
+  background: none;
+  border: none;
+  color: #666;
+  padding: 6px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.modal-alert-close:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.modal-alert-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.modal-btn {
+  background: #656565;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.modal-btn:hover {
+  background: #3d3f5c;
+}
+
+#confirmModal .modal-alert-icon {
+  width: fit-content;
+  margin: 0 auto;
+  margin-bottom: 12px;
+}
+
+#confirmModal .modal-alert-content {
+  flex-direction: column;
+  align-items: stretch;
+    text-align: center;
+
+}
+
+#confirmModal .modal-alert-actions {
+  justify-content: center;
+  margin-top: 12px;
+}
+
+@keyframes modalFadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+}
