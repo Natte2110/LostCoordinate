@@ -1,6 +1,5 @@
 from flask import Blueprint, request, jsonify
 from app.models import Team, Polygon, Question, ClaimedPolygon, AnsweredQuestion, AssignedQuestion
-from app.services.question_service import check_answer
 from app import db
 from datetime import datetime
 from sqlalchemy import func
