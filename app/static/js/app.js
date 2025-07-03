@@ -124,16 +124,15 @@ require([
       // Default: no actions
       popupTemplate.actions = [];
 
-      popupTemplate.content = () => {
+      popupTemplate.content = async () => {
         const container = document.createElement("div");
 
         if (!teamId) {
-          container.innerHTML = "You must join a team to interact with this tile.";
+          container.innerHTML += "You must join a team to interact with this tile.";
           return container;
         }
 
         if (!hasClaimedAny) {
-          // Starting tile claim allowed
           container.innerHTML = "Claim this as your starting tile.";
           popupTemplate.actions = [claimAction];
           return container;
@@ -146,69 +145,86 @@ require([
 
         // Fetch question
         container.innerHTML = "Loading question...";
-        fetch(`/api/question-for/${teamId}/${polygonId}`)
-          .then(res => res.json())
-          .then(q => {
-            if (q.text) {
-              const hints = q.hints || [];
-              let shownHintIndex = -1;
 
-              container.innerHTML = `
-            <b>Answer this to claim:</b><br><br>
-            <div><strong>${q.text}</strong></div><br>
-            <input type="text" id="answerInput" placeholder="Your answer" style="width: 100%; padding: 4px;"><br><br>
-            <button id="submitAnswerBtn">Submit Answer</button>
-            <button id="showHintBtn">Show Hint</button>
-            <div id="hintBox" style="margin-top: 10px; display: none;"></div>
-            <input type="hidden" id="questionId" value="${q.id}">
-          `;
+        try {
+          const [qRes, valRes] = await Promise.all([
+            fetch(`/api/question-for/${teamId}/${polygonId}`),
+            fetch(`/api/polygon/${polygonId}/value`)
+          ]);
 
-              const submitBtn = container.querySelector("#submitAnswerBtn");
-              const showHintBtn = container.querySelector("#showHintBtn");
-              const answerInput = container.querySelector("#answerInput");
-              const hintBox = container.querySelector("#hintBox");
+          const q = await qRes.json();
+          const valJson = await valRes.json();
 
-              showHintBtn.addEventListener("click", () => {
-                if (shownHintIndex + 1 < hints.length) {
-                  shownHintIndex++;
-                  hintBox.style.display = "block";
-                  hintBox.innerHTML += `<div>- ${hints[shownHintIndex]}</div>`;
-                } else {
-                  hintBox.innerHTML += "<div><i>No more hints available</i></div>";
-                }
-              });
+          if (q.text) {
+            const hints = q.hints || [];
+            let shownHintIndex = -1;
 
-              submitBtn.addEventListener("click", () => {
-                const answer = answerInput.value.trim();
-                if (!answer) return showModalAlert("Error!", "Please enter an answer.", "error");
-
-                fetch("/api/answer", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ teamId, polygonId, answer, questionId: q.id })
-                })
-                  .then(res => res.json())
-                  .then(data => {
-                    if (data.correct) {
-                      showModalAlert("Correct!", "You claimed the county.", "success");
-                      view.popup.close();
-                      updateClaimedPolygons();
-                      updateTeamScore();
-                    } else {
-                      showModalAlert("Error!", "Wrong answer. Try again.", "error");
-                    }
-                  });
-              });
+            let valueHtml = "";
+            if (valRes.ok && valJson.value !== undefined) {
+              valueHtml = `<div><strong>County Value:</strong> £${valJson.value}</div><br>`;
             } else {
-              container.innerHTML = q.error || "Could not fetch a question.";
+              valueHtml = `<div><strong>County Value:</strong> Not available</div><br>`;
             }
-          })
-          .catch(() => {
-            container.innerHTML = "Error loading question.";
-          });
+
+            container.innerHTML = `
+        ${valueHtml}
+        <b>Answer this to claim:</b><br><br>
+        <div><strong>${q.text}</strong></div><br>
+        <input type="text" id="answerInput" placeholder="Your answer" style="width: 100%; padding: 4px;"><br><br>
+        <button id="submitAnswerBtn">Submit Answer</button>
+        <button id="showHintBtn">Show Hint</button>
+        <div id="hintBox" style="margin-top: 10px; display: none;"></div>
+        <input type="hidden" id="questionId" value="${q.id}">
+      `;
+
+            const submitBtn = container.querySelector("#submitAnswerBtn");
+            const showHintBtn = container.querySelector("#showHintBtn");
+            const answerInput = container.querySelector("#answerInput");
+            const hintBox = container.querySelector("#hintBox");
+
+            showHintBtn.addEventListener("click", () => {
+              if (shownHintIndex + 1 < hints.length) {
+                shownHintIndex++;
+                hintBox.style.display = "block";
+                hintBox.innerHTML += `<div>- ${hints[shownHintIndex]}</div>`;
+              } else {
+                hintBox.innerHTML += "<div><i>No more hints available</i></div>";
+              }
+            });
+
+            submitBtn.addEventListener("click", () => {
+              const answer = answerInput.value.trim();
+              if (!answer) return showModalAlert("Error!", "Please enter an answer.", "error");
+
+              fetch("/api/answer", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ teamId, polygonId, answer, questionId: q.id })
+              })
+                .then(res => res.json())
+                .then(data => {
+                  if (data.correct) {
+                    showModalAlert("Correct!", "You claimed the county.", "success");
+                    view.popup.close();
+                    updateClaimedPolygons();
+                    updateTeamScore();
+                  } else {
+                    showModalAlert("Error!", "Wrong answer. Try again.", "error");
+                  }
+                });
+            });
+
+          } else {
+            container.innerHTML = q.error || "Could not fetch a question.";
+          }
+        } catch (err) {
+          console.error("Error loading question or value:", err);
+          container.innerHTML = "Error loading question or value.";
+        }
 
         return container;
       };
+
 
       feature.popupTemplate = popupTemplate;
       view.popup.open({

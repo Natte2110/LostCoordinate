@@ -41,6 +41,8 @@ class Polygon(db.Model):
 
     id = db.Column(db.String, primary_key=True)  # e.g. "E09000033"
     name = db.Column(db.String, nullable=False)  # e.g. "Westminster"
+    area = db.Column(db.Float)  # Area in square meters
+    value = db.Column(db.Integer)
 
 
 class ClaimedPolygon(db.Model):

@@ -130,6 +130,7 @@
                     window.location.reload();
                 };
 
+                let previousMoney = null;
                 function updateTeamDisplay() {
                     const teamId = localStorage.getItem("teamId");
                     const name = localStorage.getItem("teamName");
@@ -147,6 +148,13 @@
                                 if (team) {
                                     teamScore.textContent = `Score: ${team.claimedCount}`;
                                     teamMoney.textContent = `Money: £${team.money}`;
+
+                                    if (previousMoney !== null && team.money > previousMoney) {
+                                        const gained = team.money - previousMoney;
+                                        modalUtils.showModalAlert("Income Gained", `Your team gained £${gained}`, "success");
+                                    }
+
+                                    previousMoney = team.money;
                                 }
                             });
                     } else {
@@ -154,11 +162,12 @@
                         createBtn.style.display = "inline";
                         teamScore.textContent = "";
                         teamMoney.textContent = "";
+                        previousMoney = null;
                     }
                 }
 
-
                 updateTeamDisplay();
+                setInterval(updateTeamDisplay, 15000)
             })();
         });
 

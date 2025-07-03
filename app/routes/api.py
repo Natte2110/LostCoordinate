@@ -238,3 +238,15 @@ def submit_answer():
 
     return jsonify({"success": True, "correct": is_correct})
 
+
+@api_bp.route("/polygon/<polygon_id>/value", methods=["GET"])
+def get_polygon_value(polygon_id):
+    polygon = Polygon.query.get(polygon_id)
+    if not polygon:
+        return jsonify({"error": "Polygon not found"}), 404
+
+    return jsonify({
+        "id": polygon.id,
+        "name": polygon.name,
+        "value": polygon.value
+    })
