@@ -433,3 +433,68 @@ body {
     transform: translateX(-50%) translateY(0) scale(1);
   }
 }
+
+/* Container for popup content */
+.esri-popup__main-container .esri-popup__content {
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #f0f0f0;
+  background-color: #1e1e1e;
+  padding: 12px;
+}
+
+/* County value display */
+.popup-county-value {
+  font-weight: bold;
+  color: #9ae6b4; /* light green */
+  margin-bottom: 10px;
+}
+
+/* Question text */
+.popup-question {
+  font-size: 15px;
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+
+/* Input field */
+#answerInput {
+  width: 100%;
+  padding: 6px 10px;
+  font-size: 14px;
+  background-color: #2a2a2a;
+  border: 1px solid #444;
+  color: #fff;
+  border-radius: 4px;
+  margin-bottom: 10px;
+}
+
+/* Buttons */
+#submitAnswerBtn,
+#showHintBtn {
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  margin-right: 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+#submitAnswerBtn:hover,
+#showHintBtn:hover {
+  background-color: #2563eb;
+}
+
+/* Hint box */
+#hintBox {
+  background-color: #333;
+  padding: 8px;
+  border-left: 4px solid #fbbf24; /* amber */
+  margin-top: 10px;
+  font-style: italic;
+  color: #f1f1c1;
+  border-radius: 3px;
+}
