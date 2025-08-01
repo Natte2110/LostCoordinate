@@ -103,7 +103,16 @@ require([
       showLoader()
       const hit = await view.hitTest(event);
       const feature = hit.results.find(r => r.graphic?.layer === countiesLayer)?.graphic;
-      if (!feature) return;
+      if (!feature) {
+        highlightLayer.removeAll();
+        hideLoader()
+        showModalAlert(
+              "No Tile At Click",
+              "There is no tile here.",
+              "error"
+            );
+        return
+      };
 
       highlightLayer.removeAll();
       const highlightGraphic = new Graphic({
