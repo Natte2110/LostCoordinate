@@ -33,6 +33,7 @@ async function loadScoreboard() {
       card.innerHTML = `
         <div class="team-header">#${index + 1} ${team.name}</div>
         <div class="stat">Claims: <span>${team.claimedCount}</span></div>
+        <div class="stat">Income: <span>£${team.income}</span></div>
         <div class="stat">Last Claimed: <span>${lastClaim}</span></div>
         <div class="progress-bar-container">
           <div class="progress-bar" style="width: ${percentClaimed}%; background-color: ${team.color};"></div>

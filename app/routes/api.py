@@ -343,8 +343,16 @@ def scoreboard():
 
     data = []
     for team in teams:
-        claimed_count = ClaimedPolygon.query.filter_by(team_id=team.id).count()
+        claimed_polys = ClaimedPolygon.query.filter_by(team_id=team.id).all()
+        claimed_count = len(claimed_polys)
         last_claim = db.session.query(func.max(ClaimedPolygon.timestamp)).filter_by(team_id=team.id).scalar()
+
+        # Calculate income: sum of polygon values
+        income = 0
+        for cp in claimed_polys:
+            poly = Polygon.query.get(cp.polygon_id)
+            if poly and poly.value:
+                income += poly.value
 
         data.append({
             "teamId": team.id,
@@ -352,10 +360,10 @@ def scoreboard():
             "color": team.color,
             "money": round(team.money, 2),
             "claimedCount": claimed_count,
-            "lastClaimed": last_claim.isoformat() if last_claim else None
+            "lastClaimed": last_claim.isoformat() if last_claim else None,
+            "income": income
         })
 
     data.sort(key=lambda x: x["claimedCount"], reverse=True)
 
     return jsonify({"teams": data})
-
