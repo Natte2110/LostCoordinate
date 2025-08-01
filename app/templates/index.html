@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Lost Coordinate</title>
+    <link rel="stylesheet" href="https://js.arcgis.com/4.29/esri/themes/dark/main.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://js.arcgis.com/4.29/"></script>
+    <script>
+        require(["/static/js/showModalAlert.js"], function () {
+            console.log("Modal alert module loaded");
+        });
+    </script>
+    <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
+</head>
+
+<body>
+    <nav id="navBar">
+        <div class="nav-left">
+            <span class="app-title">Lost Coordinate</span>
+        </div>
+        <div class="nav-right">
+            <span id="teamInfo">Not in a team</span>
+            <span id="teamScore"></span>
+            <span id="teamMoney"></span>
+            <button id="createTeamBtn" class="cssbuttons-io">
+                <span>Create/Join Team</span>
+            </button>
+            <button id="leaveTeamBtn" class="cssbuttons-io" style="display:none;">
+                <span>Leave Team</span>
+            </button>
+            <button id="deleteTeamBtn" class="cssbuttons-io" style="display:none;">
+                <span>Delete Team</span>
+            </button>
+
+        </div>
+
+    </nav>
+
+    <div id="mapView"></div>
+
+    <div id="mapLoader" class="loader-overlay hidden">
+        <div class="spinner"></div>
+    </div>
+
+    <div id="confirmModal" class="modal-alert hidden">
+        <div class="modal-alert-content">
+            <div class="modal-alert-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                    stroke="currentColor" width="24" height="24" style="color: #fbbf24;">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+                </svg>
+            </div>
+            <div class="modal-alert-text">
+                <p class="modal-alert-title">Confirm</p>
+                <p class="modal-alert-description">Are you sure?</p>
+            </div>
+            <div class="modal-alert-actions">
+                <button id="confirmYesBtn" class="modal-btn">Yes</button>
+                <button id="confirmNoBtn" class="modal-btn">No</button>
+            </div>
+        </div>
+    </div>
+    <div id="questionModal" class="modal hidden">
+        <div class="modal-content">
+            <span class="modal-close"
+                onclick="document.getElementById('questionModal').classList.add('hidden')">&times;</span>
+            <div class="modal-body"></div>
+        </div>
+    </div>
+
+    <div id="alertModal" class="modal-alert hidden">
+        <div class="modal-alert-content">
+            <div class="modal-alert-icon">
+
+            </div>
+            <div class="modal-alert-text">
+                <p class="modal-alert-title">Please try again</p>
+                <p class="modal-alert-description">This is the description part</p>
+            </div>
+            <button class="modal-alert-close">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                    stroke="currentColor" class="modal-alert-icon-svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                </svg>
+            </button>
+
+        </div>
+        <div class="modal-timer"></div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/teamHandling.js') }}"></script>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+
+</html>

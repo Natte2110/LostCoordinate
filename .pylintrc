@@ -1,0 +1,28 @@
+[MASTER]
+ignore=migrations,venv
+load-plugins=pylint_flask, pylint_sqlalchemy
+
+[MESSAGES CONTROL]
+disable=
+    too-few-public-methods,
+    no-member,
+    too-many-arguments,
+    too-many-locals,
+    unused-argument,
+    invalid-name,
+    duplicate-code,
+    too-many-instance-attributes
+
+[FORMAT]
+max-line-length=100
+
+[DESIGN]
+max-attributes=10
+max-args=6
+
+[REPORTS]
+output-format=colorized
+reports=no
+
+[TYPECHECK]
+ignored-modules=flask_sqlalchemy

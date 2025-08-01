@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Create or Join a Team – Dev Day Map Game</title>
+  <link rel="stylesheet" href="https://js.arcgis.com/4.29/esri/themes/light/main.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
+</head>
+<body>
+    <div class="backdrop">
+  <div class="form-container">
+    <h1>Create or Join a Team</h1>
+    <form id="createForm" class="form">
+      <span class="input-span">
+        <label for="name" class="label">Team Name</label>
+        <input type="text" name="name" id="name" required>
+      </span>
+      <span class="input-span">
+        <label for="password" class="label">Password</label>
+        <input type="password" name="password" id="password" required>
+      </span>
+
+      <fieldset>
+        <legend>Select a Team Color:</legend>
+        <div id="colorOptions"></div>
+      </fieldset>
+
+      <input class="submit" type="submit" value="Create & Go to Map">
+    </form>
+
+    <hr>
+
+    <h2>Join Existing Team</h2>
+    <div id="teamsList">Loading teams…</div>
+  </div>
+</div>
+<script src="{{ url_for('static', filename='js/teamSetup.js') }}"></script>
+</body>
+</html>
