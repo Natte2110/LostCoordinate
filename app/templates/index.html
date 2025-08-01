@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Dev Day Map Game</title>
+    <title>Lost Coordinate</title>
     <link rel="stylesheet" href="https://js.arcgis.com/4.29/esri/themes/dark/main.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <script src="https://js.arcgis.com/4.29/"></script>
@@ -15,10 +15,9 @@
 </head>
 
 <body>
-    <!-- Navigation bar -->
     <nav id="navBar">
         <div class="nav-left">
-            <span class="app-title">Dev Day Map Game</span>
+            <span class="app-title">Lost Coordinate</span>
         </div>
         <div class="nav-right">
             <span id="teamInfo">Not in a team</span>
@@ -40,24 +39,8 @@
 
     <div id="mapView"></div>
 
-    <div id="alertModal" class="modal-alert hidden">
-        <div class="modal-alert-content">
-            <div class="modal-alert-icon">
-
-            </div>
-            <div class="modal-alert-text">
-                <p class="modal-alert-title">Please try again</p>
-                <p class="modal-alert-description">This is the description part</p>
-            </div>
-            <button class="modal-alert-close">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                    stroke="currentColor" class="modal-alert-icon-svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-                </svg>
-            </button>
-
-        </div>
-        <div class="modal-timer"></div>
+    <div id="mapLoader" class="loader-overlay hidden">
+        <div class="spinner"></div>
     </div>
 
     <div id="confirmModal" class="modal-alert hidden">
@@ -79,99 +62,35 @@
             </div>
         </div>
     </div>
+    <div id="questionModal" class="modal hidden">
+        <div class="modal-content">
+            <span class="modal-close"
+                onclick="document.getElementById('questionModal').classList.add('hidden')">&times;</span>
+            <div class="modal-body"></div>
+        </div>
+    </div>
 
-    <script>
-        require([
-            "/static/js/showModalAlert.js",
-            "/static/js/confirmModal.js"
-        ], function (modalUtils, confirmUtils) {
-            window.showModalAlert = modalUtils.showModalAlert;
-            window.hideModalAlert = modalUtils.hideModalAlert;
-            window.showConfirmModal = confirmUtils.showConfirmModal;
+    <div id="alertModal" class="modal-alert hidden">
+        <div class="modal-alert-content">
+            <div class="modal-alert-icon">
 
-            // Run immediately — DOM is already ready at this point
-            (function () {
-                const createBtn = document.getElementById("createTeamBtn");
-                const leaveBtn = document.getElementById("leaveTeamBtn");
-                const deleteBtn = document.getElementById("deleteTeamBtn");
-                const teamInfo = document.getElementById("teamInfo");
-                const teamScore = document.getElementById("teamScore");
-                const teamMoney = document.getElementById("teamMoney");
+            </div>
+            <div class="modal-alert-text">
+                <p class="modal-alert-title">Please try again</p>
+                <p class="modal-alert-description">This is the description part</p>
+            </div>
+            <button class="modal-alert-close">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                    stroke="currentColor" class="modal-alert-icon-svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                </svg>
+            </button>
 
-                createBtn.onclick = () => {
-                    window.location.href = "/team";
-                };
+        </div>
+        <div class="modal-timer"></div>
+    </div>
 
-                leaveBtn.onclick = async () => {
-                    const teamId = localStorage.getItem("teamId");
-                    if (!teamId) return;
-                    const confirmed = await confirmUtils.showConfirmModal("Leave Team", "Are you sure?");
-                    if (!confirmed) return;
-                    await fetch(`/api/team/leave/${teamId}`, { method: "POST" });
-                    localStorage.clear();
-                    window.location.reload();
-                };
-
-                deleteBtn.onclick = async () => {
-                    const teamId = localStorage.getItem("teamId");
-                    if (!teamId) return;
-                    const confirmed = await confirmUtils.showConfirmModal("Delete Team", "Are you sure?");
-                    if (!confirmed) return;
-
-                    const res = await fetch(`/api/team/${teamId}`, { method: "DELETE" });
-                    const json = await res.json();
-
-                    if (!res.ok) {
-                        modalUtils.showModalAlert("Delete Failed", json.message || "An error occurred", "error");
-                        return;
-                    }
-
-                    localStorage.clear();
-                    window.location.reload();
-                };
-
-                let previousMoney = null;
-                function updateTeamDisplay() {
-                    const teamId = localStorage.getItem("teamId");
-                    const name = localStorage.getItem("teamName");
-
-                    teamInfo.textContent = name ? `Team: ${name}` : "Not in a team";
-
-                    if (teamId) {
-                        leaveBtn.style.display = deleteBtn.style.display = "inline";
-                        createBtn.style.display = "none";
-
-                        fetch("/api/state")
-                            .then((res) => res.json())
-                            .then((data) => {
-                                const team = data.teams.find((t) => String(t.id) === String(teamId));
-                                if (team) {
-                                    teamScore.textContent = `Score: ${team.claimedCount}`;
-                                    teamMoney.textContent = `Money: £${team.money}`;
-
-                                    if (previousMoney !== null && team.money > previousMoney) {
-                                        const gained = team.money - previousMoney;
-                                        modalUtils.showModalAlert("Income Gained", `Your team gained £${gained}`, "success");
-                                    }
-
-                                    previousMoney = team.money;
-                                }
-                            });
-                    } else {
-                        leaveBtn.style.display = deleteBtn.style.display = "none";
-                        createBtn.style.display = "inline";
-                        teamScore.textContent = "";
-                        teamMoney.textContent = "";
-                        previousMoney = null;
-                    }
-                }
-
-                updateTeamDisplay();
-                setInterval(updateTeamDisplay, 15000)
-            })();
-        });
-
-    </script>
+    <script src="{{ url_for('static', filename='js/teamHandling.js') }}"></script>
 
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>
