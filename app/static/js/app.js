@@ -1,22 +1,42 @@
 require([
+  // ArcGIS Core
   "esri/Map",
   "esri/views/MapView",
+
+  // Layers
   "esri/layers/GeoJSONLayer",
-  "esri/renderers/SimpleRenderer",
-  "esri/core/reactiveUtils",
   "esri/layers/GraphicsLayer",
+
+  // Renderers & Graphics
+  "esri/renderers/SimpleRenderer",
   "esri/Graphic",
+
+  // Geometry & Projection
   "esri/geometry/geometryEngine",
   "esri/geometry/projection",
-  "esri/geometry/SpatialReference",
-  'static/js/showModalAlert.js',
-  'static/js/confirmModal.js'
+
+  // Custom App Modules
+  "static/js/showModalAlert.js",
+  "static/js/confirmModal.js",
+  "static/js/defendTile.js",
+  "static/js/claimStartTile.js",
+  "static/js/questionModal.js"
 ], (
-  Map, MapView, GeoJSONLayer, SimpleRenderer,
-  reactiveUtils, GraphicsLayer, Graphic,
-  geometryEngine, projection, SpatialReference, modalUtils, confirmModal
+  Map, MapView,
+  GeoJSONLayer, GraphicsLayer,
+  SimpleRenderer, Graphic,
+  geometryEngine, projection,
+  modalUtils, confirmModal, defendTile, claimStartTile, questionModal
 ) => {
   (async function init() {
+    const loader = document.getElementById("mapLoader");
+    const showLoader = () => {
+      loader.classList.remove("hidden");
+    }
+    const hideLoader = () => {
+      loader.classList.add("hidden");
+    }
+
     const map = new Map({ basemap: "dark-gray-vector" });
     const view = new MapView({
       container: "mapView",
@@ -24,6 +44,14 @@ require([
       zoom: 6
     });
     document.querySelector(".modal-alert-close").addEventListener("click", modalUtils.hideModalAlert);
+
+    function autoLink(text) {
+      const urlRegex = /(https?:\/\/[^\s]+)/g;
+      return text.replace(urlRegex, (url) => {
+        const safeUrl = url.replace(/"/g, '&quot;');
+        return `<a href="${safeUrl}" target="_blank" rel="noopener noreferrer">${safeUrl}</a>`;
+      });
+    }
 
     // Remove labels
     view.when(() => {
@@ -47,7 +75,7 @@ require([
     };
 
     const countiesLayer = new GeoJSONLayer({
-      url: "/static/data/uk_counties.geojson",
+      url: "/static/data/dev_day_Polygons.geojson",
       outFields: ["*"],
       renderer: new SimpleRenderer({
         symbol: {
@@ -58,11 +86,11 @@ require([
         }
       }),
       popupTemplate: {
-        title: "{LAD13NM}",
+        title: "{areanm}",
         content: [{
           type: "fields",
           fieldInfos: [
-            { fieldName: "LAD13NM", label: "County Name" },
+            { fieldName: "areanm", label: "County Name" },
             { fieldName: "id", label: "Polygon ID" }
           ]
         }]
@@ -76,22 +104,26 @@ require([
     view.popup.autoOpenEnabled = false;
 
     view.on("click", async (event) => {
+      showLoader()
       const hit = await view.hitTest(event);
       const feature = hit.results.find(r => r.graphic?.layer === countiesLayer)?.graphic;
       if (!feature) return;
 
       const teamId = localStorage.getItem("teamId");
-      const polygonId = feature.attributes.LAD13CD;
-
+      const polygonId = feature.attributes.areacd;
+      view.goTo(feature)
 
       // Optional: Show a loading spinner or disable further action while checking
+      let claimed = [];
+      let tile = null;
+      let isOwnedByTeam = false;
       try {
         const claimRes = await fetch("/api/claimed-polygons");
         const claimData = await claimRes.json();
 
-        const claimed = claimData.claimed || [];
-        const tile = claimed.find(c => String(c.polygonId) === String(polygonId));
-
+        claimed = claimData.claimed || [];
+        tile = claimed.find(c => String(c.polygonId) === String(polygonId));
+        isOwnedByTeam = tile && String(tile.teamId) === String(teamId);
         if (tile && String(tile.teamId) !== String(teamId)) {
           const defendingClaims = claimed.filter(c => String(c.teamId) === String(tile.teamId));
           if (defendingClaims.length === 1) {
@@ -100,6 +132,7 @@ require([
               "You can't claim the last remaining county of another team.",
               "error"
             );
+            hideLoader()
             return; // Stop the popup from showing
           }
         }
@@ -111,10 +144,22 @@ require([
 
       // Dynamically check if team has claimed any tiles
       let hasClaimedAny = false;
+      let isDefended = false;
+
       try {
         const res = await fetch("/api/claimed-polygons");
         const data = await res.json();
-        hasClaimedAny = data.claimed.some(c => String(c.teamId) === String(teamId));
+
+        const claimed = data.claimed || [];
+
+        hasClaimedAny = claimed.some(c => String(c.teamId) === String(teamId));
+
+        const currentTile = claimed.find(c => String(c.polygonId) === String(feature.attributes.areacd));
+        if (currentTile?.defendedUntil) {
+          const defendedUntil = new Date(currentTile.defendedUntil);
+          isDefended = defendedUntil > new Date(); // true if it's in the future
+        }
+
       } catch (e) {
         console.warn("Failed to fetch claim status:", e);
       }
@@ -128,109 +173,112 @@ require([
         const container = document.createElement("div");
 
         if (!teamId) {
-          container.innerHTML += "You must join a team to interact with this tile.";
-          return container;
+          showModalAlert("Not in a Team", "You must join a team to interact with this tile.", "error");
+          hideLoader()
+          return;
+        }
+
+        if (isOwnedByTeam) {
+          const countyName = feature.attributes.areanm || "Unknown County";
+
+          const defendedUntil = tile?.defendedUntil;
+          const now = new Date();
+          const isCurrentlyDefended = defendedUntil && new Date(defendedUntil) > now;
+
+          let defendCost = 100; // Default fallback value
+
+          // Fetch value of the polygon
+          try {
+            const valRes = await fetch(`/api/polygon/${polygonId}/value`);
+            if (valRes.ok) {
+              const valJson = await valRes.json();
+              if (typeof valJson.value === "number") {
+                defendCost = valJson.value;
+              }
+            }
+          } catch (err) {
+            console.warn("Failed to fetch polygon value for defend cost:", err);
+          }
+
+          let defendInfo = isCurrentlyDefended
+            ? `<div>This tile is defended until <strong>${new Date(defendedUntil).toLocaleTimeString()}</strong>.</div>`
+            : `<div>This tile is not currently defended.</div>`;
+
+          defendInfo += `<div>Defending a tile costs the same amount as the income for that tile and prevents other teams from taking it from you for 30 minutes.</div>`;
+
+          const defendBtnHtml = isCurrentlyDefended
+            ? ""
+            : `<button id="defendBtn" style="margin-top:10px;">Defend Tile (£${defendCost})</button>`;
+
+          modalBody.innerHTML = `
+            <div><strong>${countyName}</strong> (Owned)</div>
+            ${defendInfo}
+            ${defendBtnHtml}
+          `;
+
+          modal.classList.remove("hidden");
+
+          const defendBtn = document.getElementById("defendBtn");
+          if (defendBtn) {
+            defendBtn.onclick = () => defendTile.handleDefendTile({
+              teamId,
+              polygonId,
+              countyName,
+              defendCost,
+              modalBody,
+              modal,
+              updateClaimedPolygons,
+            });
+          }
+          hideLoader()
+          return;
         }
 
         if (!hasClaimedAny) {
-          container.innerHTML = "Claim this as your starting tile.";
-          popupTemplate.actions = [claimAction];
-          return container;
+          const countyId = feature.attributes.areacd;
+          const countyName = feature.attributes.areanm || "Unknown";
+
+          claimStartTile.claimStartTile({
+            teamId,
+            countyId,
+            countyName,
+            updateClaimedPolygons,
+            hideLoader
+          });
+
+          return;
+        }
+
+        if (isDefended) {
+          showModalAlert("Tile Defended", "This tile is temporarily protected.", "error");
+          hideLoader()
+          return;
         }
 
         if (!isAdjacent) {
-          container.innerHTML = "This tile is locked. You may only claim adjacent tiles.";
-          return container;
+          showModalAlert("Tile Locked", "You may only claim adjacent tiles.", "error");
+          hideLoader()
+          return;
         }
 
-        // Fetch question
-        container.innerHTML = "Loading question...";
-
-        try {
-          const [qRes, valRes] = await Promise.all([
-            fetch(`/api/question-for/${teamId}/${polygonId}`),
-            fetch(`/api/polygon/${polygonId}/value`)
-          ]);
-
-          const q = await qRes.json();
-          const valJson = await valRes.json();
-
-          if (q.text) {
-            const hints = q.hints || [];
-            let shownHintIndex = -1;
-
-            let valueHtml = "";
-            if (valRes.ok && valJson.value !== undefined) {
-              valueHtml = `<div><strong>County Value:</strong> £${valJson.value}</div><br>`;
-            } else {
-              valueHtml = `<div><strong>County Value:</strong> Not available</div><br>`;
-            }
-
-            container.innerHTML = `
-        ${valueHtml}
-        <b>Answer this to claim:</b><br><br>
-        <div><strong>${q.text}</strong></div><br>
-        <input type="text" id="answerInput" placeholder="Your answer" style="width: 100%; padding: 4px;"><br><br>
-        <button id="submitAnswerBtn">Submit Answer</button>
-        <button id="showHintBtn">Show Hint</button>
-        <div id="hintBox" style="margin-top: 10px; display: none;"></div>
-        <input type="hidden" id="questionId" value="${q.id}">
-      `;
-
-            const submitBtn = container.querySelector("#submitAnswerBtn");
-            const showHintBtn = container.querySelector("#showHintBtn");
-            const answerInput = container.querySelector("#answerInput");
-            const hintBox = container.querySelector("#hintBox");
-
-            showHintBtn.addEventListener("click", () => {
-              if (shownHintIndex + 1 < hints.length) {
-                shownHintIndex++;
-                hintBox.style.display = "block";
-                hintBox.innerHTML += `<div>- ${hints[shownHintIndex]}</div>`;
-              } else {
-                hintBox.innerHTML += "<div><i>No more hints available</i></div>";
-              }
-            });
-
-            submitBtn.addEventListener("click", () => {
-              const answer = answerInput.value.trim();
-              if (!answer) return showModalAlert("Error!", "Please enter an answer.", "error");
-
-              fetch("/api/answer", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ teamId, polygonId, answer, questionId: q.id })
-              })
-                .then(res => res.json())
-                .then(data => {
-                  if (data.correct) {
-                    showModalAlert("Correct!", "You claimed the county.", "success");
-                    view.popup.close();
-                    updateClaimedPolygons();
-                    updateTeamScore();
-                  } else {
-                    showModalAlert("Error!", "Wrong answer. Try again.", "error");
-                  }
-                });
-            });
-
-          } else {
-            container.innerHTML = q.error || "Could not fetch a question.";
-          }
-        } catch (err) {
-          console.error("Error loading question or value:", err);
-          container.innerHTML = "Error loading question or value.";
-        }
+        questionModal.showQuestionModal({
+          feature,
+          polygonId,
+          teamId,
+          updateClaimedPolygons,
+          updateTeamScore,
+          hideLoader
+        });
 
         return container;
       };
 
 
-      feature.popupTemplate = popupTemplate;
-      view.popup.open({
-        location: event.mapPoint,
-        features: [feature]
-      });
+      const modal = document.getElementById("questionModal");
+      const modalBody = modal.querySelector(".modal-body");
+
+      await popupTemplate.content(); // Let the function manage the modal itself
+
     });
 
     countiesLayer.when().then(() => {
@@ -243,7 +291,7 @@ require([
             minScale: view.scale
           };
         });
-        countiesLayer.queryFeatures({ returnGeometry: true, outFields: ["LAD13CD", "LAD13NM"] })
+        countiesLayer.queryFeatures({ returnGeometry: true, outFields: ["areacd", "areanm"] })
           .then((featureSet) => {
             featureSet.features.forEach((f) => {
 
@@ -252,8 +300,8 @@ require([
                 attributes: f.attributes
                 // No symbol here – symbol is handled in updateClaimedPolygons
               });
-              polygonGraphicsMap.set(f.attributes.LAD13CD, graphic);
-              polygonGraphicsMap.set(f.attributes.LAD13NM, graphic);
+              polygonGraphicsMap.set(f.attributes.areacd, graphic);
+              polygonGraphicsMap.set(f.attributes.areanm, graphic);
             });
 
 
@@ -290,52 +338,6 @@ require([
       });
     }
 
-    reactiveUtils.on(() => view.popup, "trigger-action", (event) => {
-      if (event.action.id === "claim-start-tile") {
-        const graphic = view.popup.selectedFeature;
-        if (!graphic) return showModalAlert("Error!", "No Graphic Selected.", "error");
-
-        const countyId = graphic.attributes.LAD13CD
-        const countyName = graphic.attributes.LAD13NM || "Unknown";
-        confirmModal.showConfirmModal("Confirm", `Claim ${countyName} as your starting tile?`)
-          .then((confirmed) => {
-            if (!confirmed) return;
-            const teamId = localStorage.getItem("teamId");
-            if (!teamId) return showModalAlert("Error!", "You must be in a team to claim a starting tile.", "error");
-
-            fetch("/api/claim-start", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ teamId, polygonId: countyId })
-            })
-              .then(res => res.json())
-              .then(json => {
-                if (!json.success) return showModalAlert("Error!", "Someone already owns this!", "error");
-
-                showModalAlert("Success!", `You ${countyName} as your starting tile!`, "success");
-                view.popup.close();
-                userHasClaimed = true;
-                countiesLayer.actions = [];
-                updateClaimedPolygons();
-              });
-          });
-
-      }
-    });
-    reactiveUtils.on(
-      () => view.popup,
-      "selectedFeature",
-      () => {
-        const feature = view.popup.selectedFeature;
-        if (!feature) return;
-
-        // Remove claim action if already claimed
-        if (userHasClaimed) {
-          view.popup.actions.removeAll();
-        }
-      }
-    );
-
     let polygonGraphicsMap = new window.Map(); // Use native Map
 
     const claimedTeamPolygons = new window.Map(); // teamId -> array of geometries
@@ -348,7 +350,10 @@ require([
           claimedTeamPolygons.clear();
 
           for (const entry of data.claimed) {
-            claimedMap.set(entry.polygonId, entry.teamColor);
+            claimedMap.set(entry.polygonId, {
+              teamColor: entry.teamColor,
+              defendedUntil: entry.defendedUntil
+            });
 
             // Store for adjacency check
             if (!claimedTeamPolygons.has(entry.teamId)) {
@@ -359,24 +364,27 @@ require([
           }
 
           claimedLayer.removeAll();
-          for (const [ladCode, teamColor] of claimedMap.entries()) {
+          for (const [ladCode, { teamColor, defendedUntil }] of claimedMap.entries()) {
             const graphic = polygonGraphicsMap.get(ladCode);
             if (!graphic) continue;
+
+            const isDefended = defendedUntil && new Date(defendedUntil) > new Date();
 
             const clone = graphic.clone();
             clone.symbol = {
               type: "simple-fill",
-              style: "solid",
+              style: isDefended ? "backward-diagonal" : "solid",
               color: teamColor,
               outline: { color: [0, 0, 0, 0.8], width: 1.5 }
             };
             claimedLayer.add(clone);
           }
+
           updateTeamScore();
         });
     }
-  })();
 
+  })();
 
   function updateTeamScore() {
     const teamId = localStorage.getItem("teamId");

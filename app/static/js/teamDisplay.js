@@ -30,7 +30,7 @@ define([], function () {
       teamScoreEl.textContent = '';
     }
   }
-
+  window.updateTeamDisplay = updateTeamDisplay;
   return {
     updateTeamDisplay
   };
