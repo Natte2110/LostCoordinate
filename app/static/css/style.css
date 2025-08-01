@@ -59,7 +59,6 @@ body {
   z-index: 999;
   height: 4rem;
   box-sizing: border-box;
-  /* << Add this */
   color: white;
 }
 
@@ -97,7 +96,6 @@ body {
   position: relative;
 }
 
-/* Optional: Add a simple "X" or overlay stripe */
 #colorOptions label.taken::after {
   content: "✕";
   position: absolute;
@@ -180,8 +178,6 @@ body {
   color: #efefef;
 }
 
-
-/* From Uiverse.io by bociKond */
 .form {
   --bg-light: #efefef;
   --bg-dark: #707070;
@@ -287,7 +283,6 @@ body {
   transform: scale(1.05);
 }
 
-
 .modal-alert {
   position: fixed;
   top: 5rem;
@@ -329,12 +324,12 @@ body {
   }
 }
 
-
 .modal-alert.hidden {
   display: none;
 }
 
 .modal-alert-content {
+  z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -414,8 +409,7 @@ body {
 #confirmModal .modal-alert-content {
   flex-direction: column;
   align-items: stretch;
-    text-align: center;
-
+  text-align: center;
 }
 
 #confirmModal .modal-alert-actions {
@@ -428,6 +422,7 @@ body {
     opacity: 0;
     transform: translateX(-50%) translateY(-10px) scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: translateX(-50%) translateY(0) scale(1);
@@ -447,7 +442,7 @@ body {
 /* County value display */
 .popup-county-value {
   font-weight: bold;
-  color: #9ae6b4; /* light green */
+  color: #9ae6b4;
   margin-bottom: 10px;
 }
 
@@ -492,9 +487,138 @@ body {
 #hintBox {
   background-color: #333;
   padding: 8px;
-  border-left: 4px solid #fbbf24; /* amber */
+  border-left: 4px solid #fbbf24;
   margin-top: 10px;
   font-style: italic;
   color: #f1f1c1;
   border-radius: 3px;
+}
+
+/* Overlay for modal background */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1001;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  /* Center using Flexbox */
+  align-items: center;
+  justify-content: center;
+}
+
+/* Modal box styling to match modal-alert */
+.modal-content {
+  background-color: rgb(55, 55, 55);
+  /* match .modal-alert-content */
+  border-radius: 8px;
+  color: white;
+  padding: 20px;
+  max-width: 600px;
+  width: 90%;
+  position: relative;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+/* Close button in top-right */
+.modal-close {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  font-size: 24px;
+  color: #666;
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+
+.modal-close:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+/* Hidden state for modal */
+.hidden {
+  display: none;
+}
+
+/* Question text block */
+.popup-question {
+  font-size: 15px;
+  font-weight: 500;
+  margin-bottom: 12px;
+  color: #fff;
+}
+
+.modal-content button {
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.modal-content button:hover {
+  background-color: #2563eb;
+}
+
+.modal-content a {
+  color: #3b82f6;
+  text-decoration: underline;
+  word-break: break-word;
+}
+
+.modal-content a:hover {
+  color: #60a5fa;
+  text-decoration: none;
+}
+
+/* Ensure question modal is below */
+#questionModal {
+  z-index: 1001;
+}
+
+/* Ensure alert modal appears above question modal */
+#alertModal {
+  z-index: 1002;
+}
+
+#confirmModal {
+  z-index: 1003;
+}
+
+.loader-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.loader-overlay .spinner {
+  border: 6px solid #ccc;
+  border-top: 6px solid #0079c1;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 0.8s linear infinite;
+}
+
+.loader-overlay.hidden {
+  display: none;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
