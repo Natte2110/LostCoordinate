@@ -72,7 +72,7 @@ flask shell
 
 ```bash
 python import_counties.py
-python load_questions.py
+python load_questions.py ./questions/
 ```
 
 4. Start the development server:
