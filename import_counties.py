@@ -15,18 +15,18 @@ def project_geometry(geom):
     return transform(transformer.transform, geom)
 
 with app.app_context():
-    with open("./app/static/data/uk_counties.geojson") as f:
+    with open("./app/static/data/dev_day_Polygons.geojson") as f:
         geojson = json.load(f)
 
     polygons = []
 
-    # Step 1: Calculate area for each feature and store temporarily
+    # Calculate area for each feature and store temporarily
     for feature in geojson["features"]:
         props = feature["properties"]
         geom = feature["geometry"]
 
-        polygon_id = props.get("LAD13CD")
-        name = props.get("LAD13NM")
+        polygon_id = props.get("areacd")
+        name = props.get("areanm")
 
         if polygon_id and name and geom:
             shapely_geom = shape(geom)
@@ -39,7 +39,7 @@ with app.app_context():
                 "area": area_sqm
             })
 
-    # Step 2: Sort areas and calculate thresholds
+    # Sort areas and calculate thresholds
     sorted_by_area = sorted(polygons, key=lambda p: p["area"])
     total = len(sorted_by_area)
     one_third = total // 3
@@ -56,7 +56,7 @@ with app.app_context():
             id=p["id"],
             name=p["name"],
             area=p["area"],
-            value=value  # assumes your Polygon model has a `value` column
+            value=value
         ))
 
     db.session.commit()
