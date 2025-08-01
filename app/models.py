@@ -26,6 +26,7 @@ class Question(db.Model):
     text = db.Column(db.Text, nullable=False)
     answer = db.Column(db.String, nullable=False)
     hints_json = db.Column(db.Text, nullable=True)
+    value = db.Column(db.Integer, default=30, nullable=False)
 
     @property
     def hints(self):
@@ -39,8 +40,8 @@ class Question(db.Model):
 class Polygon(db.Model):
     __tablename__ = "polygons"
 
-    id = db.Column(db.String, primary_key=True)  # e.g. "E09000033"
-    name = db.Column(db.String, nullable=False)  # e.g. "Westminster"
+    id = db.Column(db.String, primary_key=True)
+    name = db.Column(db.String, nullable=False)
     area = db.Column(db.Float)  # Area in square meters
     value = db.Column(db.Integer)
 
@@ -52,6 +53,7 @@ class ClaimedPolygon(db.Model):
     polygon_id = db.Column(db.String, db.ForeignKey("polygons.id"), nullable=False)
     team_id = db.Column(db.Integer, db.ForeignKey("team.id"), nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    defended_until = db.Column(db.DateTime, nullable=True)
 
 
 class AnsweredQuestion(db.Model):
