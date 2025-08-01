@@ -1,0 +1,122 @@
+[
+  {
+    "text": "What platform is commonly used for spatial analysis in both web and desktop environments?",
+    "answer": "arcgis",
+    "value": 15,
+    "hints": ["It starts with 'a'", "It's made by Esri"]
+  },
+  {
+    "text": "Which software allows users to perform geospatial analysis through a browser or desktop?",
+    "answer": "arcgis",
+    "value": 30,
+    "hints": ["Think Esri's main product", "It handles layers, maps, and spatial data"]
+  },
+  {
+    "text": "What software is used for creating interactive maps and managing spatial data?",
+    "answer": "arcgis",
+    "value": 15,
+    "hints": ["It ends in 'gis'", "Created by Esri"]
+  },
+  {
+    "text": "Which platform includes tools like Pro, Online, and Enterprise for GIS work?",
+    "answer": "arcgis",
+    "value": 30,
+    "hints": ["Pro is part of it", "It's a comprehensive GIS platform"]
+  },
+  {
+    "text": "What GIS platform supports both feature services and map services?",
+    "answer": "arcgis",
+    "value": 50,
+    "hints": ["Used widely in government and enterprise", "It supports Python and JavaScript APIs"]
+  },
+  {
+    "text": "What's the name of Esri's software platform that includes tools for geoprocessing and analysis?",
+    "answer": "arcgis",
+    "value": 15,
+    "hints": ["It's Esri's flagship product", "Comes in both desktop and cloud versions"]
+  },
+  {
+    "text": "Which platform would you use to perform a viewshed analysis or generate buffers?",
+    "answer": "arcgis",
+    "value": 30,
+    "hints": ["Buffer is a common tool here", "Viewshed is a GP tool"]
+  },
+  {
+    "text": "What platform would you use to publish a feature service and consume it via REST?",
+    "answer": "arcgis",
+    "value": 15,
+    "hints": ["REST API belongs to it", "Popular for hosted feature layers"]
+  },
+  {
+    "text": "Which platform allows users to perform routing, geocoding, and service area analysis?",
+    "answer": "arcgis",
+    "value": 50,
+    "hints": ["It includes network analysis tools", "You can solve routes with it"]
+  },
+  {
+    "text": "What system is used to build web apps using Experience Builder and Map Viewer?",
+    "answer": "arcgis",
+    "value": 30,
+    "hints": ["Experience Builder is part of it", "It has a web-based Map Viewer"]
+  },
+  {
+    "text": "Which GIS platform allows Python scripting through `arcgis` and `arcpy` modules?",
+    "answer": "arcgis",
+    "value": 30,
+    "hints": ["Used in Jupyter notebooks", "Can automate workflows"]
+  },
+  {
+    "text": "What Esri platform allows users to analyze spatial relationships between datasets?",
+    "answer": "arcgis",
+    "value": 15,
+    "hints": ["It's about spatial analysis", "Overlay, Intersect are common tools"]
+  },
+  {
+    "text": "Which platform allows creating dashboards, story maps, and web maps?",
+    "answer": "arcgis",
+    "value": 30,
+    "hints": ["Story Maps and Dashboards are apps within it", "It's cloud-based too"]
+  },
+  {
+    "text": "What is the software platform you would use to perform spatial joins and selections?",
+    "answer": "arcgis",
+    "value": 50,
+    "hints": ["Geoprocessing is part of it", "Used in ArcGIS Pro"]
+  },
+  {
+    "text": "Which toolset supports hosted layers, user management, and sharing settings?",
+    "answer": "arcgis",
+    "value": 15,
+    "hints": ["Used in ArcGIS Online", "Users, groups, and sharing are key parts"]
+  },
+  {
+    "text": "Which platform provides REST endpoints for layers and geoprocessing tools?",
+    "answer": "arcgis",
+    "value": 30,
+    "hints": ["REST services are a major feature", "Service Directory is part of it"]
+  },
+  {
+    "text": "What's the name of the GIS platform that supports field data collection with mobile apps?",
+    "answer": "arcgis",
+    "value": 30,
+    "hints": ["Supports Field Maps, QuickCapture, Survey123", "Ideal for mobile workflows"]
+  },
+  {
+    "text": "Which Esri software lets you build, edit, and analyze 3D scenes and layers?",
+    "answer": "arcgis",
+    "value": 50,
+    "hints": ["Supports SceneView and elevation", "Used for 3D visualizations"]
+  },
+  {
+    "text": "What platform offers 'Living Atlas' of global authoritative data layers?",
+    "answer": "arcgis",
+    "value": 15,
+    "hints": ["Living Atlas is integrated into it", "Includes basemaps, boundaries, demographics"]
+  },
+  {
+    "text": "What Esri platform allows organizations to build private GIS portals?",
+    "answer": "arcgis",
+    "value": 50,
+    "hints": ["Used for on-premise deployments", "Often branded as Enterprise"]
+  }
+]
