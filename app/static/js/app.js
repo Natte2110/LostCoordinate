@@ -68,12 +68,6 @@ require([
       userHasClaimed = data.claimed.some(c => String(c.teamId) === String(teamId));
     }
 
-    const claimAction = {
-      title: "Claim as Starting Tile",
-      id: "claim-start-tile",
-      className: "esri-icon-map-pin"
-    };
-
     const countiesLayer = new GeoJSONLayer({
       url: "/static/data/dev_day_Polygons.geojson",
       outFields: ["*"],
@@ -98,9 +92,11 @@ require([
     });
 
     const claimedLayer = new GraphicsLayer();
-
+    const highlightLayer = new GraphicsLayer();
+    
     map.add(countiesLayer);
     map.add(claimedLayer);  // Add after countiesLayer
+    map.add(highlightLayer);
     view.popup.autoOpenEnabled = false;
 
     view.on("click", async (event) => {
@@ -108,6 +104,21 @@ require([
       const hit = await view.hitTest(event);
       const feature = hit.results.find(r => r.graphic?.layer === countiesLayer)?.graphic;
       if (!feature) return;
+
+      highlightLayer.removeAll();
+      const highlightGraphic = new Graphic({
+        geometry: feature.geometry,
+        symbol: {
+          type: "simple-fill",
+          style: "solid",
+          color: [255, 255, 255, 0],
+          outline: {
+            color: [255, 255, 255],
+            width: 10
+          }
+        }
+      });
+      highlightLayer.add(highlightGraphic);
 
       const teamId = localStorage.getItem("teamId");
       const polygonId = feature.attributes.areacd;
@@ -133,6 +144,7 @@ require([
               "error"
             );
             hideLoader()
+            highlightLayer.removeAll();
             return; // Stop the popup from showing
           }
         }
@@ -175,6 +187,7 @@ require([
         if (!teamId) {
           showModalAlert("Not in a Team", "You must join a team to interact with this tile.", "error");
           hideLoader()
+          highlightLayer.removeAll();
           return;
         }
 
@@ -231,6 +244,7 @@ require([
             });
           }
           hideLoader()
+          highlightLayer.removeAll();
           return;
         }
 
@@ -252,12 +266,14 @@ require([
         if (isDefended) {
           showModalAlert("Tile Defended", "This tile is temporarily protected.", "error");
           hideLoader()
+          highlightLayer.removeAll();
           return;
         }
 
         if (!isAdjacent) {
           showModalAlert("Tile Locked", "You may only claim adjacent tiles.", "error");
           hideLoader()
+          highlightLayer.removeAll();
           return;
         }
 
@@ -271,12 +287,12 @@ require([
         });
 
         return container;
-      };
 
+      };
 
       const modal = document.getElementById("questionModal");
       const modalBody = modal.querySelector(".modal-body");
-
+      highlightLayer.removeAll();
       await popupTemplate.content(); // Let the function manage the modal itself
 
     });
